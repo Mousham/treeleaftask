@@ -14,7 +14,7 @@ class Person {
         self.name = name
         self.age = age
     }
-     var apartment: School?
+    var apartment: School?
 }
 
 
@@ -23,7 +23,7 @@ class School {
     init(roll: String) {
         self.roll = roll
     }
-     var tenant: Person?
+    var tenant: Person?
 }
 class ViewController: UIViewController {
 
