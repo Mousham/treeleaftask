@@ -1,91 +1,64 @@
 //
 //  ViewController.swift
-//  MVVVMApiCall
+//  MemoryLeak
 //
-//  Created by Midas on 18/05/2022.
+//  Created by Midas on 17/05/2022.
 //
 
 import UIKit
+import Photos
+class Person {
+    var name: String
+    var age: Int
+    init(name: String, age: Int) {
+        self.name = name
+        self.age = age
+    }
+     var apartment: School?
+}
 
+
+class School {
+    let roll: String
+    init(roll: String) {
+        self.roll = roll
+    }
+     var tenant: Person?
+}
 class ViewController: UIViewController {
-    @IBOutlet weak var tableView: UITableView!
-    lazy var viewModel = {
-        EmployeesViewModel()
-    }()
+
+    @IBOutlet weak var leakLbl: UILabel!
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        initView()
-        initViewModel()
+        memoryLeak()
+        showAnimation()
+      
     }
-    func initView() {
-        tableView.delegate = self
-        tableView.dataSource = self
+    func memoryLeak() {
+        self.view.backgroundColor = .red
+        let person = Person(name: "No Name", age: 30)
+        let unit4A = School(roll: "10")
+        person.apartment = unit4A
+        unit4A.tenant = person
+    }
+    func showAnimation() {      
        
-        tableView.separatorColor = .white
-        tableView.separatorStyle = .singleLine
-        tableView.tableFooterView = UIView()
-        tableView.allowsSelection = false
-
-        tableView.register(EmployeeCell.nib, forCellReuseIdentifier: EmployeeCell.identifier)
-    }
-    func initViewModel() {
-        // Get employees data
-        viewModel.getEmployees()
+            UIView.transition(with: leakLbl, duration: 1.5,
+                              options: .transitionCrossDissolve,
+                              animations: {
+                self.leakLbl.alpha = 0
+                          })
+            UIView.transition(with: leakLbl, duration: 1.5,
+                              options: .transitionCrossDissolve,
+                              animations: {
+                self.leakLbl.alpha = 1
+                          })
         
-        // Reload TableView closure
-        viewModel.reloadTableView = { [weak self] in
-            DispatchQueue.main.async {
-                self?.tableView.reloadData()
-            }
-        }
+       
     }
+   
 
 
 }
-// MARK: - UITableViewDelegate
-
-extension ViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 130
-    }
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-//        UIView.animate(withDuration: 0.8, animations: {
-//               cell.contentView.alpha = 1
-//           })
-        let rotationTransform = CATransform3DTranslate(CATransform3DIdentity, 0, 50, 0)
-        cell.layer.transform = rotationTransform
-        cell.alpha = 0
-        UIView.animate(withDuration: 0.8, animations: {
-            cell.layer.transform = CATransform3DIdentity
-            cell.alpha = 1
-        })
-    }
-}
-
-// MARK: - UITableViewDataSource
-
-extension ViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        //return viewModel.employeeCellModels.count
-        return viewModel.employeeCellViewModels.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: EmployeeCell.identifier, for: indexPath) as? EmployeeCell else { fatalError("xib does not exists") }
-        let cellVM = viewModel.getCellViewModel(at: indexPath)
-        cell.cellViewModel = cellVM
-        cell.backView.layer.masksToBounds = false
-        cell.backView.layer.cornerRadius = 12
-        cell.backView.clipsToBounds = true
-        cell.layoutSubviews()
-        cell.layoutIfNeeded()
-        cell.backView.applyGradient(isVertical: true, colorArray: [UIColor(hexString: "8BABCA"),UIColor(hexString: "EAD7E5")])
-
-       //cell.contentView.alpha = 0
-        return cell
-    }
-}
-
-
 
